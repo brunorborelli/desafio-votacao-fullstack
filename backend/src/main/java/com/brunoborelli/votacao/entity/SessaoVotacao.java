@@ -57,4 +57,8 @@ public class SessaoVotacao {
     public boolean estaAbertaEm(Instant instante) {
         return !instante.isBefore(dataInicio) && instante.isBefore(dataFim);
     }
+
+    public boolean estaEncerradaEm(Instant instante) {
+        return !instante.isBefore(dataFim);
+    }
 }
