@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl,FormGroup,ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -49,9 +49,13 @@ export class DetalhePautaPage implements OnInit {
   protected readonly abrindoSessao = signal(false);
   protected readonly erroCarregamento = signal('');
 
-  protected readonly duracaoMinutos = new FormControl<number | null>(null, {
-    validators: [Validators.min(1), Validators.pattern(/^\d+$/)]
+  
+  protected readonly formularioSessao = new FormGroup({
+    duracaoMinutos: new FormControl<number | null>(null, {
+      validators: [Validators.min(1), Validators.pattern(/^\d+$/)]
+    })
   });
+   protected readonly duracaoMinutos = this.formularioSessao.controls.duracaoMinutos;
 
   ngOnInit(): void {
     const id = Number(this.rota.snapshot.paramMap.get('id'));

@@ -65,8 +65,8 @@
             <strong>Nenhuma sessão foi aberta</strong>
             <p>Defina uma duração ou deixe o campo vazio para usar 1 minuto.</p>
           </div>
-
-          <form (ngSubmit)="abrirSessao()">
+          
+          <form [formGroup]="formularioSessao" (ngSubmit)="abrirSessao()">
             <mat-form-field appearance="outline">
               <mat-label>Duração em minutos</mat-label>
               <input
@@ -74,8 +74,8 @@
                 type="number"
                 min="1"
                 step="1"
-                placeholder="1"
-                [formControl]="duracaoMinutos"
+                placeholder="1"                
+                formControlName="duracaoMinutos"
               />
               <mat-hint>Opcional; o padrão é 1 minuto.</mat-hint>
               @if (duracaoMinutos.touched && duracaoMinutos.invalid) {
