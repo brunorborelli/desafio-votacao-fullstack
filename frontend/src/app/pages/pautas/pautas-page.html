@@ -1,0 +1,125 @@
+<header class="cabecalho-pagina">
+  <div>
+    <span class="secao">Administração</span>
+    <h1>Pautas</h1>
+    <p>Cadastre os assuntos que serão decididos pelos associados.</p>
+  </div>
+
+  <span class="quantidade">{{ pautas().length }} cadastrada(s)</span>
+</header>
+
+<div class="grade">
+  <mat-card appearance="outlined" class="cartao formulario-cartao">
+    <mat-card-header>
+      <mat-card-title>Nova pauta</mat-card-title>
+      <mat-card-subtitle>Informe o assunto da votação</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="formulario" (ngSubmit)="cadastrar()">
+        <mat-form-field appearance="outline">
+          <mat-label>Título</mat-label>
+          <input
+            matInput
+            formControlName="titulo"
+            maxlength="200"
+            autocomplete="off"
+          />
+          <mat-hint align="end">
+            {{ formulario.controls.titulo.value.length }}/200
+          </mat-hint>
+          @if (
+            formulario.controls.titulo.touched &&
+            formulario.controls.titulo.invalid
+          ) {
+            <mat-error>Informe um título com até 200 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Descrição</mat-label>
+          <textarea
+            matInput
+            formControlName="descricao"
+            maxlength="1000"
+            rows="6"
+          ></textarea>
+          <mat-hint align="end">
+            {{ formulario.controls.descricao.value.length }}/1000
+          </mat-hint>
+          @if (
+            formulario.controls.descricao.touched &&
+            formulario.controls.descricao.invalid
+          ) {
+            <mat-error>Informe uma descrição com até 1000 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button type="submit" [disabled]="cadastrando()">
+          @if (cadastrando()) {
+            <mat-spinner diameter="20" />
+            Cadastrando...
+          } @else {
+            Cadastrar pauta
+          }
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined" class="cartao listagem-cartao">
+    <mat-card-header>
+      <div class="titulo-listagem">
+        <div>
+          <mat-card-title>Pautas cadastradas</mat-card-title>
+          <mat-card-subtitle>Mais recentes primeiro</mat-card-subtitle>
+        </div>
+        <button
+          mat-stroked-button
+          type="button"
+          [disabled]="carregando()"
+          (click)="carregarPautas()"
+        >
+          Atualizar
+        </button>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="conteudo-listagem" aria-live="polite">
+      @if (carregando()) {
+        <div class="estado" role="status">
+          <mat-spinner diameter="36" />
+          <span>Carregando pautas...</span>
+        </div>
+      } @else if (erroCarregamento()) {
+        <div class="estado estado-erro" role="alert">
+          <strong>Não foi possível exibir as pautas</strong>
+          <span>{{ erroCarregamento() }}</span>
+          <button mat-stroked-button type="button" (click)="carregarPautas()">
+            Tentar novamente
+          </button>
+        </div>
+      } @else if (pautas().length === 0) {
+        <div class="estado">
+          <strong>Nenhuma pauta cadastrada</strong>
+          <span>Use o formulário ao lado para criar a primeira.</span>
+        </div>
+      } @else {
+        <div class="lista-pautas">
+          @for (pauta of pautas(); track pauta.id) {
+            <article class="pauta">
+              <div class="metadados">
+                <span>Pauta #{{ pauta.id }}</span>
+                <time [attr.datetime]="pauta.dataCriacao">
+                  {{ pauta.dataCriacao | date: 'dd/MM/yyyy, HH:mm' }}
+                </time>
+              </div>
+              <h2>{{ pauta.titulo }}</h2>
+              <p>{{ pauta.descricao }}</p>
+            </article>
+          }
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
