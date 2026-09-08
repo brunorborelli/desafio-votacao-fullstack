@@ -17,6 +17,7 @@ import { finalize } from 'rxjs';
 import { ErroApi } from '../../model/erro-api';
 import { Pauta } from '../../model/pauta';
 import { PautaService } from '../../service/pauta-service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pautas-pagina',
@@ -28,7 +29,8 @@ import { PautaService } from '../../service/pauta-service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './pautas-page.html',
   styleUrl: './pautas-page.scss'

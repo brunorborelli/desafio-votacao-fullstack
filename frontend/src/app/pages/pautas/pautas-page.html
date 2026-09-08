@@ -116,6 +116,11 @@
               </div>
               <h2>{{ pauta.titulo }}</h2>
               <p>{{ pauta.descricao }}</p>
+              <div class="acoes-pauta">
+                <a mat-stroked-button [routerLink]="['/pautas', pauta.id]">
+                  Acessar pauta
+                </a>
+              </div>
             </article>
           }
         </div>

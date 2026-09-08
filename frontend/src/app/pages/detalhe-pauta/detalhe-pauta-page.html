@@ -1,0 +1,107 @@
+<a mat-button routerLink="/pautas" class="voltar">← Voltar para pautas</a>
+
+@if (carregando()) {
+  <div class="estado-pagina" role="status">
+    <mat-spinner diameter="42" />
+    <span>Carregando detalhes...</span>
+  </div>
+} @else if (erroCarregamento()) {
+  <mat-card appearance="outlined" class="cartao estado-pagina" role="alert">
+    <strong>Não foi possível exibir a pauta</strong>
+    <span>{{ erroCarregamento() }}</span>
+    <div class="acoes-erro">
+      <a mat-stroked-button routerLink="/pautas">Ver pautas</a>
+      <button mat-flat-button type="button" (click)="carregarDados()">
+        Tentar novamente
+      </button>
+    </div>
+  </mat-card>
+} @else if (pauta(); as pautaAtual) {
+  <header class="cabecalho-pauta">
+    <div class="metadados-pauta">
+      <span>Pauta #{{ pautaAtual.id }}</span>
+      <time [attr.datetime]="pautaAtual.dataCriacao">
+        Criada em {{ pautaAtual.dataCriacao | date: 'dd/MM/yyyy, HH:mm' }}
+      </time>
+    </div>
+    <h1>{{ pautaAtual.titulo }}</h1>
+    <p>{{ pautaAtual.descricao }}</p>
+  </header>
+
+  <mat-card appearance="outlined" class="cartao sessao-cartao">
+    <mat-card-header>
+      <div class="titulo-sessao">
+        <div>
+          <mat-card-title>Sessão de votação</mat-card-title>
+          <mat-card-subtitle>Abertura e período de participação</mat-card-subtitle>
+        </div>
+
+        @if (sessao(); as sessaoAtual) {
+          <span
+            class="situacao"
+            [class.situacao-aberta]="sessaoEstaAberta(sessaoAtual)"
+          >
+            {{ sessaoEstaAberta(sessaoAtual) ? 'Aberta' : 'Encerrada' }}
+          </span>
+        }
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (sessao(); as sessaoAtual) {
+        <dl class="periodo">
+          <div>
+            <dt>Início</dt>
+            <dd>{{ sessaoAtual.dataInicio | date: 'dd/MM/yyyy, HH:mm:ss' }}</dd>
+          </div>
+          <div>
+            <dt>Encerramento</dt>
+            <dd>{{ sessaoAtual.dataFim | date: 'dd/MM/yyyy, HH:mm:ss' }}</dd>
+          </div>
+        </dl>
+
+        <p class="orientacao">
+          @if (sessaoEstaAberta(sessaoAtual)) {
+            A sessão está recebendo votos dos associados.
+          } @else {
+            O período de votação desta pauta foi encerrado.
+          }
+        </p>
+      } @else {
+        <div class="sem-sessao">
+          <div>
+            <strong>Nenhuma sessão foi aberta</strong>
+            <p>Defina uma duração ou deixe o campo vazio para usar 1 minuto.</p>
+          </div>
+
+          <form (ngSubmit)="abrirSessao()">
+            <mat-form-field appearance="outline">
+              <mat-label>Duração em minutos</mat-label>
+              <input
+                matInput
+                type="number"
+                min="1"
+                step="1"
+                placeholder="1"
+                [formControl]="duracaoMinutos"
+              />
+              <mat-hint>Opcional; o padrão é 1 minuto.</mat-hint>
+              @if (duracaoMinutos.touched && duracaoMinutos.invalid) {
+                <mat-error>Informe um número inteiro maior que zero.</mat-error>
+              }
+            </mat-form-field>
+
+            <button mat-flat-button type="submit" [disabled]="abrindoSessao()">
+              @if (abrindoSessao()) {
+                <mat-spinner diameter="20" />
+                Abrindo...
+              } @else {
+                Abrir sessão
+              }
+            </button>
+          </form>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+}

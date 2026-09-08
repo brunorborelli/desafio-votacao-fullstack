@@ -124,6 +124,12 @@
   font-weight: 650;
 }
 
+.acoes-pauta {
+  display: flex;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
 .estado {
   display: flex;
   min-height: 240px;
@@ -167,6 +173,11 @@
   .metadados {
     align-items: start;
     flex-direction: column;
+  }
+
+
+  .acoes-pauta a {
+    width: 100%;
   }
 
   .formulario-cartao button[type='submit'] {
