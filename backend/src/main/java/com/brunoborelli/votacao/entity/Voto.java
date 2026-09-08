@@ -39,10 +39,19 @@ public class Voto {
     protected Voto() {}
 
     public Voto(Pauta pauta, String cpfAssociado, EscolhaVoto escolha) {
+        this(pauta, cpfAssociado, escolha, Instant.now());
+    }
+
+    public Voto(
+            Pauta pauta,
+            String cpfAssociado,
+            EscolhaVoto escolha,
+            Instant dataCriacao
+    ) {
         this.pauta = pauta;
         this.cpfAssociado = cpfAssociado;
         this.escolha = escolha;
-        this.dataCriacao = Instant.now();
+        this.dataCriacao = dataCriacao;
     }
 
     public Long getId() {

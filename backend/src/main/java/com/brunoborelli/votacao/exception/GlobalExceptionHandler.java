@@ -4,6 +4,7 @@ import com.brunoborelli.votacao.dto.ErroResposta;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,6 +16,43 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RequisicaoInvalidaException.class)
+    public ResponseEntity<ErroResposta> tratarRequisicaoInvalida(
+            RequisicaoInvalidaException excecao,
+            HttpServletRequest requisicao
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErroResposta erro = new ErroResposta(
+                Instant.now(),
+                status.value(),
+                "Requisição inválida",
+                excecao.getMessage(),
+                requisicao.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(status).body(erro);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErroResposta> tratarCorpoDaRequisicaoInvalido(
+            HttpMessageNotReadableException excecao,
+            HttpServletRequest requisicao
+    ) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        ErroResposta erro = new ErroResposta(
+                Instant.now(),
+                status.value(),
+                "Requisição inválida",
+                "O corpo da requisição está ausente ou possui valores inválidos",
+                requisicao.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(status).body(erro);
+    }
+
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<ErroResposta> tratarRecursoNaoEncontrado(
