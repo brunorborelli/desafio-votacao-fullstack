@@ -8,7 +8,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { DetalhePautaPage } from './detalhe-pauta-page';
 
-describe('DetalhePautaPagina', () => {
+describe('DetalhePautaPage', () => {
   let controladorHttp: HttpTestingController;
 
   beforeEach(() => {
