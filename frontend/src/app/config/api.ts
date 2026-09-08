@@ -1,0 +1,1 @@
+export const URL_BASE_API = '/api/v1'
