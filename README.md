@@ -1,3 +1,178 @@
+# Desafio Votação
+
+Aplicação full-stack para cadastrar pautas, abrir sessões, receber votos e
+consultar resultados. O projeto foi desenvolvido para o
+[desafio de votação full-stack](https://github.com/somosdb/desafio-votacao-fullstack).
+
+## Funcionalidades
+
+- cadastro e consulta de pautas;
+- abertura de uma sessão por pauta;
+- duração informada na abertura ou um minuto por padrão;
+- votos `SIM` e `NAO`;
+- um único voto por CPF em cada pauta;
+- validação de CPF e autorização por cliente falso;
+- persistência dos dados no PostgreSQL.
+
+## Tecnologias
+
+- backend: Java 21, Spring Boot 4, Spring Data JPA, Flyway e PostgreSQL 17;
+- frontend: Angular 21, Angular Material e Nginx;
+- testes: JUnit, MockMvc, Testcontainers, Vitest e Grafana k6;
+- execução: Docker e Docker Compose.
+
+## Executar com Docker
+
+É necessário ter Docker Engine e Docker Compose instalados.
+
+Na raiz do repositório:
+
+```bash
+docker compose up --build -d
+docker compose ps
+```
+
+Aguarde o banco ficar 'healthy' e acesse:
+
+- aplicação: <http://localhost:4200>
+- Swagger: <http://localhost:8080/swagger-ui/index.html>
+- OpenAPI: <http://localhost:8080/v3/api-docs>
+
+Para consultar os logs:
+
+```bash
+docker compose logs -f frontend backend
+```
+
+Para encerrar sem apagar os dados:
+
+```bash
+docker compose down
+```
+
+Os dados ficam armazenados em uma base do PostgreSQL. `docker compose down -v` remove essa base e deve ser usado apenas
+caso queira reiniciar o banco do zero.
+
+## Desenvolvimento local
+
+### Backend
+
+Com Java 21 e Docker ativos, suba somente o banco:
+
+```bash
+docker compose up -d banco-de-dados
+
+cd backend
+./mvnw spring-boot:run
+```
+
+A API ficará disponível em <http://localhost:8080>. As configurações padrão do
+banco podem ser substituídas pelas variáveis `URL_BANCO`, `USUARIO_BANCO` e
+`SENHA_BANCO`.
+
+### Frontend
+
+Com Node.js 24 e npm instalados, deixe o backend em execução e abra outro
+terminal:
+
+```bash
+cd frontend
+npm ci
+npm start
+```
+
+A aplicação ficará disponível em <http://localhost:4200>. Durante o
+desenvolvimento, as requisições para `/api` são encaminhadas ao backend pelo
+proxy do Angular.
+
+## API
+
+| Método | Endpoint | Descrição |
+| --- | --- | --- |
+| `POST` | `/api/v1/pautas` | cadastrar pauta |
+| `GET` | `/api/v1/pautas` | listar pautas |
+| `GET` | `/api/v1/pautas/{id}` | consultar pauta |
+| `POST` | `/api/v1/pautas/{id}/sessao` | abrir sessão |
+| `GET` | `/api/v1/pautas/{id}/sessao` | consultar sessão |
+| `POST` | `/api/v1/pautas/{id}/votos` | registrar voto |
+| `GET` | `/api/v1/pautas/{id}/resultado` | consultar resultado |
+
+Os contratos e exemplos de requisição podem ser consultados no Swagger.
+
+## Regras principais
+
+- cada pauta pode ter somente uma sessão;
+- a duração deve ser informada em minutos;
+- quando a duração não é enviada, a sessão permanece aberta por um minuto;
+- o CPF deve ter 11 dígitos válidos;
+- cada CPF pode votar uma única vez por pauta;
+- votos são aceitos somente durante uma sessão aberta;
+- o resultado pode ser `APROVADA`, `REPROVADA`, `EMPATE` ou `SEM_VOTOS`;
+- o cliente falso retorna aleatoriamente `ABLE_TO_VOTE` ou
+  `UNABLE_TO_VOTE`.
+
+CPF inválido ou associado não autorizado retornam `404`, conforme a tarefa
+bônus. Erros de validação retornam `400` e conflitos de regra de negócio
+retornam `409`.
+
+## Testes
+
+Os testes do backend utilizam Testcontainers, portanto o Docker precisa estar
+ativo:
+
+```bash
+cd backend
+./mvnw test
+```
+
+Testes e build do frontend:
+
+```bash
+cd frontend
+npm ci
+npm test -- --watch=false
+npm run build
+```
+
+## Teste de desempenho
+
+O cenário k6 cria uma pauta e uma sessão e registra votos concorrentes. Primeiro
+deixe banco e backend em execução:
+
+```bash
+docker compose up -d banco-de-dados backend
+```
+
+Teste rápido:
+
+```bash
+QUANTIDADE_VOTOS=1000 USUARIOS_VIRTUAIS=20 \
+docker compose --profile desempenho run --rm teste-desempenho
+```
+
+Cenário com cem mil votos:
+
+```bash
+QUANTIDADE_VOTOS=100000 USUARIOS_VIRTUAIS=100 \
+docker compose --profile desempenho run --rm teste-desempenho
+```
+
+As recusas de autorização são esperadas porque o cliente falso responde
+aleatoriamente. O script repete a operação até registrar o voto ou atingir o
+limite configurado.
+
+## Arquitetura e decisões
+
+O backend utiliza arquitetura em camadas, com controladores, serviços,
+repositórios, entidades e DTOs. O Flyway controla o banco e constraints
+garantem a integridade de votos concorrentes.
+
+O sistema não utiliza autenticação ou Spring Security porque o desafio permite
+abstrair a segurança. A API é versionada pela URI, usando o prefixo
+`/api/v1`. Backend e frontend ficam no mesmo repositório para simplificar entrega, dessa mesma forma, também não foram usadas branchs para cada feature
+
+_______________________________________________________________________________________________________________________________________________________________________________
+
 # Votação
 
 ## Objetivo
@@ -81,6 +256,3 @@ Exemplos de retorno do serviço
   deixe claro caso haja instruções especiais para execução do mesmo
   Classificação da informação: Uso Interno
 
-
-
-# desafio-votacao
