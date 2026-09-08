@@ -73,7 +73,7 @@ public class VotoService {
         try {
 
             Voto votoSalvo = votoRepository.saveAndFlush(voto);
-            LOGGER.info(
+            LOGGER.debug(
                     "Voto registrado: votoId={}, pautaId={}, escolha={}",
                     votoSalvo.getId(),
                     pautaId,

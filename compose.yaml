@@ -29,15 +29,32 @@ services:
       banco-de-dados:
         condition: service_healthy
 
-    frontend:
-      build:
-        context: ./frontend
-        dockerfile: Dockerfile
-      ports:
-        - "4200:80"
-      depends_on:
-        backend:
-          condition: service_started
+  teste-desempenho:
+    image: grafana/k6:latest
+    profiles:
+      - desempenho
+    environment:
+      URL_BASE: http://backend:8080
+      QUANTIDADE_VOTOS: ${QUANTIDADE_VOTOS:-5000}
+      USUARIOS_VIRTUAIS: ${USUARIOS_VIRTUAIS:-50}
+      MAXIMO_TENTATIVAS_AUTORIZACAO: ${MAXIMO_TENTATIVAS_AUTORIZACAO:-20}
+      DURACAO_MAXIMA: ${DURACAO_MAXIMA:-30m}
+    volumes:
+      - ./desempenho:/scripts:ro
+    command: run /scripts/teste-votacao.js
+    depends_on:
+      backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_started
 
 volumes:
   dados_postgresql:

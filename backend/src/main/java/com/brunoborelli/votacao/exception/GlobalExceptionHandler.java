@@ -108,7 +108,7 @@ public class GlobalExceptionHandler {
             HttpStatus status,
             HttpServletRequest requisicao
     ) {
-        LOGGER.warn(
+        LOGGER.debug(
                 "Requisição rejeitada: status={}, metodo={}, caminho={}",
                 status.value(),
                 requisicao.getMethod(),

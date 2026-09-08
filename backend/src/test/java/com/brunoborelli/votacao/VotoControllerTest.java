@@ -131,6 +131,10 @@ class VotoControllerTest extends IntegrationTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.mensagem")
                         .value("Associado não autorizado a votar"));
+                assertThat(votoRepository.existsByPautaIdAndCpfAssociado(
+                        pauta.getId(),
+                        CPF_VALIDO
+                )).isFalse();
     }
 
     @Test
