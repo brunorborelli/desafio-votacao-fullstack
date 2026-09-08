@@ -19,7 +19,14 @@ form {
   grid-template-columns: minmax(240px, 1fr) minmax(210px, 0.8fr) auto;
   align-items: start;
   gap: 18px;
+   > * {
+    min-width: 0;
+  }
 
+  mat-form-field {
+    width: 100%;
+  }
+  
   button {
     min-width: 148px;
     margin-top: 4px;
@@ -41,6 +48,7 @@ form {
 
   mat-radio-group {
     display: flex;
+    flex-wrap: wrap;
     gap: 16px;
   }
 
