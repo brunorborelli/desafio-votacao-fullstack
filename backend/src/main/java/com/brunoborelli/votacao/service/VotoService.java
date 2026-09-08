@@ -11,6 +11,8 @@ import com.brunoborelli.votacao.exception.ConflitoDeNegocioException;
 import com.brunoborelli.votacao.exception.RecursoNaoEncontradoException;
 import com.brunoborelli.votacao.repository.ContagemVotoPorEscolha;
 import com.brunoborelli.votacao.repository.VotoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,8 @@ import java.time.Instant;
 
 @Service
 public class VotoService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VotoService.class);
 
     private final VotoRepository votoRepository;
     private final SessaoVotacaoService sessaoVotacaoService;
@@ -67,7 +71,15 @@ public class VotoService {
         );
 
         try {
-            return votoRepository.saveAndFlush(voto);
+
+            Voto votoSalvo = votoRepository.saveAndFlush(voto);
+            LOGGER.info(
+                    "Voto registrado: votoId={}, pautaId={}, escolha={}",
+                    votoSalvo.getId(),
+                    pautaId,
+                    escolha
+            );
+            return votoSalvo;
         } catch (DataIntegrityViolationException excecao) {
             throw new ConflitoDeNegocioException(
                 "O associado com CPF " + cpfAssociado
@@ -99,7 +111,8 @@ public class VotoService {
             }
         }
 
-        return new ResultadoVotacaoResposta(
+
+        ResultadoVotacaoResposta resultado = new ResultadoVotacaoResposta(
                 pautaId,
                 sessaoVotacao.getPauta().getTitulo(),
                 quantidadeVotosSim,
@@ -107,6 +120,15 @@ public class VotoService {
                 quantidadeVotosSim + quantidadeVotosNao,
                 SituacaoResultadoVotacao.de(quantidadeVotosSim, quantidadeVotosNao)
         );
+
+        LOGGER.info(
+                "Resultado apurado: pautaId={}, votosSim={}, votosNao={}, resultado={}",
+                pautaId,
+                quantidadeVotosSim,
+                quantidadeVotosNao,
+                resultado.resultado()
+        );
+        return resultado;
     }
 
     private ConflitoDeNegocioException votoJaRegistrado(

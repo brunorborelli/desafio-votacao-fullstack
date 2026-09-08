@@ -13,10 +13,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErroResposta> tratarCorpoDaRequisicaoInvalido(
@@ -24,6 +28,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest requisicao
     ) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        registrarRequisicaoRejeitada(status, requisicao);
         ErroResposta erro = new ErroResposta(
                 Instant.now(),
                 status.value(),
@@ -43,6 +48,7 @@ public class GlobalExceptionHandler {
         HttpServletRequest requisicao
     ) {
         HttpStatus status = HttpStatus.NOT_FOUND;
+        registrarRequisicaoRejeitada(status, requisicao);
         ErroResposta erro = new ErroResposta(
             Instant.now(),
             status.value(),
@@ -66,6 +72,7 @@ public class GlobalExceptionHandler {
         }
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        registrarRequisicaoRejeitada(status, requisicao);
         ErroResposta erro = new ErroResposta(
             Instant.now(),
             status.value(),
@@ -84,6 +91,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest requisicao
     ) {
         HttpStatus status = HttpStatus.CONFLICT;
+        registrarRequisicaoRejeitada(status, requisicao);
         ErroResposta erro = new ErroResposta(
                 Instant.now(),
                 status.value(),
@@ -94,5 +102,17 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(status).body(erro);
+    }
+
+    private void registrarRequisicaoRejeitada(
+            HttpStatus status,
+            HttpServletRequest requisicao
+    ) {
+        LOGGER.warn(
+                "Requisição rejeitada: status={}, metodo={}, caminho={}",
+                status.value(),
+                requisicao.getMethod(),
+                requisicao.getRequestURI()
+        );
     }
 }

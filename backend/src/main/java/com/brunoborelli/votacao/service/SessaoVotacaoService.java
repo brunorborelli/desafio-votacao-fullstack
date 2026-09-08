@@ -5,6 +5,8 @@ import com.brunoborelli.votacao.entity.SessaoVotacao;
 import com.brunoborelli.votacao.exception.ConflitoDeNegocioException;
 import com.brunoborelli.votacao.exception.RecursoNaoEncontradoException;
 import com.brunoborelli.votacao.repository.SessaoVotacaoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,9 @@ import java.time.Instant;
 
 @Service
 public class SessaoVotacaoService {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(SessaoVotacaoService.class);
 
     private static final int DURACAO_PADRAO_MINUTOS = 1;
 
@@ -42,7 +47,15 @@ public class SessaoVotacaoService {
         SessaoVotacao sessaoVotacao = new SessaoVotacao(pauta, dataInicio, dataFim);
 
         try {
-            return sessaoVotacaoRepository.saveAndFlush(sessaoVotacao);
+            SessaoVotacao sessaoSalva =
+                    sessaoVotacaoRepository.saveAndFlush(sessaoVotacao);
+            LOGGER.info(
+                    "Sessão de votação aberta: sessaoId={}, pautaId={}, dataFim={}",
+                    sessaoSalva.getId(),
+                    pautaId,
+                    dataFim
+            );
+            return sessaoSalva;
         } catch (DataIntegrityViolationException excecao) {
             throw new ConflitoDeNegocioException(
                 "Já existe uma sessão de votação para a pauta " + pautaId,
