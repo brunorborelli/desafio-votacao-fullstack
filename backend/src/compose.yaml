@@ -13,7 +13,21 @@ services:
       test: ["CMD-SHELL", "pg_isready -U votacao -d votacao"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      URL_BANCO: jdbc:postgresql://banco-de-dados:5432/votacao
+      USUARIO_BANCO: votacao
+      SENHA_BANCO: votacao
+    ports:
+      - "8080:8080"
+    depends_on:
+      banco-de-dados:
+        condition: service_healthy
 
 volumes:
   dados_postgresql:
