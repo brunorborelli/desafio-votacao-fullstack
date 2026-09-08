@@ -1,3 +1,13 @@
 spring:
   application:
     name: votacao-backend
+  datasource:
+    url: ${URL_BANCO:jdbc:postgresql://localhost:5432/votacao}
+    username: ${USUARIO_BANCO:votacao}
+    password: ${SENHA_BANCO:votacao}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
