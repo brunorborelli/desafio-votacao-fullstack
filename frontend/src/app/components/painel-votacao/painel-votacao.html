@@ -1,0 +1,110 @@
+@if (sessaoAberta()) {
+  <mat-card appearance="outlined" class="cartao">
+    <mat-card-header>
+      <mat-card-title>Registrar voto</mat-card-title>
+      <mat-card-subtitle>
+        Tempo restante: <strong>{{ tempoRestante() }}</strong>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="formularioVoto" (ngSubmit)="registrarVoto()">
+        <mat-form-field appearance="outline">
+          <mat-label>CPF do associado</mat-label>
+          <input
+            matInput
+            formControlName="cpfAssociado"
+            inputmode="numeric"
+            maxlength="14"
+            autocomplete="off"
+            placeholder="00000000000"
+          />
+          <mat-hint>Digite 11 números; pontos e hífen são opcionais.</mat-hint>
+          @if (
+            formularioVoto.controls.cpfAssociado.touched &&
+            formularioVoto.controls.cpfAssociado.invalid
+          ) {
+            <mat-error>Informe um CPF no formato válido.</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="escolha-voto">
+          <span>Seu voto</span>
+          <mat-radio-group formControlName="escolha" aria-label="Escolha do voto">
+            <mat-radio-button value="SIM">Sim</mat-radio-button>
+            <mat-radio-button value="NAO">Não</mat-radio-button>
+          </mat-radio-group>
+          @if (
+            formularioVoto.controls.escolha.touched &&
+            formularioVoto.controls.escolha.invalid
+          ) {
+            <small>Selecione Sim ou Não.</small>
+          }
+        </div>
+
+        <button mat-flat-button type="submit" [disabled]="registrandoVoto()">
+          @if (registrandoVoto()) {
+            <mat-spinner diameter="20" />
+            Registrando...
+          } @else {
+            Confirmar voto
+          }
+        </button>
+      </form>
+
+      <p class="observacao">
+        A autorização é simulada pelo backend e pode recusar uma tentativa aleatoriamente.
+      </p>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <mat-card appearance="outlined" class="cartao">
+    <mat-card-header>
+      <mat-card-title>Resultado da votação</mat-card-title>
+      <mat-card-subtitle>A sessão foi encerrada</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (carregandoResultado()) {
+        <div class="estado" role="status">
+          <mat-spinner diameter="36" />
+          <span>Contabilizando votos...</span>
+        </div>
+      } @else if (resultado(); as resultadoAtual) {
+        <div
+          class="resultado-titulo"
+          [class.aprovada]="resultadoAtual.resultado === 'APROVADA'"
+          [class.reprovada]="resultadoAtual.resultado === 'REPROVADA'"
+        >
+          {{ textoResultado(resultadoAtual.resultado) }}
+        </div>
+
+        <dl class="contagem">
+          <div>
+            <dt>Sim</dt>
+            <dd>{{ resultadoAtual.quantidadeVotosSim }}</dd>
+          </div>
+          <div>
+            <dt>Não</dt>
+            <dd>{{ resultadoAtual.quantidadeVotosNao }}</dd>
+          </div>
+          <div>
+            <dt>Total</dt>
+            <dd>{{ resultadoAtual.totalVotos }}</dd>
+          </div>
+        </dl>
+      } @else {
+        <div class="consulta-resultado">
+          @if (erroResultado()) {
+            <p role="alert">{{ erroResultado() }}</p>
+          } @else {
+            <p>Consulte a contabilização final dos votos desta pauta.</p>
+          }
+          <button mat-flat-button type="button" (click)="consultarResultado()">
+            Consultar resultado
+          </button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+}

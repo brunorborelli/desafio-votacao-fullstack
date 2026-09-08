@@ -18,7 +18,7 @@ export class SessaoVotacaoService {
   ): Observable<SessaoVotacao> {
     return this.http.post<SessaoVotacao>(
       this.montarUrl(pautaId),
-      requisicao ?? null
+      requisicao ?? {}
     );
   }
 

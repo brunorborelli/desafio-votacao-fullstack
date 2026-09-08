@@ -6,5 +6,5 @@ export interface SessaoVotacao {
 }
 
 export interface AbrirSessaoVotacaoRequisicao {
-  duracaoMinutos: number;
+  duracaoMinutos?: number;
 }

@@ -16,6 +16,7 @@ import { Pauta } from '../../model/pauta';
 import { SessaoVotacao } from '../../model/sessao-votacao';
 import { PautaService} from '../../service/pauta-service';
 import { SessaoVotacaoService } from '../../service/sessao-votacao-service';
+import { PainelVotacao } from '../../components/painel-votacao/painel-votacao';
 
 @Component({
   selector: 'app-detalhe-pauta-pagina',
@@ -27,6 +28,7 @@ import { SessaoVotacaoService } from '../../service/sessao-votacao-service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    PainelVotacao,
     ReactiveFormsModule,
     RouterLink
   ],
@@ -123,10 +125,6 @@ export class DetalhePautaPage implements OnInit {
           }
         }
       });
-  }
-
-  protected sessaoEstaAberta(sessao: SessaoVotacao): boolean {
-    return Date.parse(sessao.dataFim) > Date.now();
   }
 
   private obterMensagemErro(erro: unknown, mensagemPadrao: string): string {
