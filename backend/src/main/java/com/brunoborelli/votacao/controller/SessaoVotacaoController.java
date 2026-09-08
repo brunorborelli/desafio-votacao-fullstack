@@ -4,6 +4,8 @@ import com.brunoborelli.votacao.dto.AbrirSessaoVotacaoRequisicao;
 import com.brunoborelli.votacao.dto.SessaoVotacaoResposta;
 import com.brunoborelli.votacao.entity.SessaoVotacao;
 import com.brunoborelli.votacao.service.SessaoVotacaoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/pautas/{pautaId}/sessao")
+@Tag(name = "Sessões de votação", description = "Abertura e consulta das sessões")
 public class SessaoVotacaoController {
 
     private final SessaoVotacaoService sessaoVotacaoService;
@@ -27,6 +30,7 @@ public class SessaoVotacaoController {
     }
 
     @PostMapping
+    @Operation(summary = "Abrir a sessão de votação de uma pauta")
     public ResponseEntity<SessaoVotacaoResposta> abrir(
         @PathVariable Long pautaId,
         @Valid @RequestBody(required = false) AbrirSessaoVotacaoRequisicao requisicao
@@ -40,6 +44,7 @@ public class SessaoVotacaoController {
     }
 
     @GetMapping
+    @Operation(summary = "Consultar a sessão de votação de uma pauta")
     public SessaoVotacaoResposta buscarPorPautaId(@PathVariable Long pautaId) {
         return SessaoVotacaoResposta.de(sessaoVotacaoService.buscarPorPautaId(pautaId));
     }
