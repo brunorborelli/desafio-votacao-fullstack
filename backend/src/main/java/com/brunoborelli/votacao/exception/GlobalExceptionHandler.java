@@ -56,4 +56,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(erro);
     }
+
+    @ExceptionHandler(ConflitoDeNegocioException.class)
+    public ResponseEntity<ErroResposta> tratarConflitoDeNegocio(
+            ConflitoDeNegocioException excecao,
+            HttpServletRequest requisicao
+    ) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        ErroResposta erro = new ErroResposta(
+                Instant.now(),
+                status.value(),
+                "Conflito",
+                excecao.getMessage(),
+                requisicao.getRequestURI(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(status).body(erro);
+    }
 }

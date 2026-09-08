@@ -53,4 +53,8 @@ public class SessaoVotacao {
     public Instant getDataFim() {
         return dataFim;
     }
+
+    public boolean estaAbertaEm(Instant instante) {
+        return !instante.isBefore(dataInicio) && instante.isBefore(dataFim);
+    }
 }
