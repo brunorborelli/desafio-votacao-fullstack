@@ -17,23 +17,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RequisicaoInvalidaException.class)
-    public ResponseEntity<ErroResposta> tratarRequisicaoInvalida(
-            RequisicaoInvalidaException excecao,
-            HttpServletRequest requisicao
-    ) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        ErroResposta erro = new ErroResposta(
-                Instant.now(),
-                status.value(),
-                "Requisição inválida",
-                excecao.getMessage(),
-                requisicao.getRequestURI(),
-                Map.of()
-        );
-
-        return ResponseEntity.status(status).body(erro);
-    }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErroResposta> tratarCorpoDaRequisicaoInvalido(

@@ -1,15 +1,16 @@
 package com.brunoborelli.votacao.service;
 
+import com.brunoborelli.votacao.client.ClientAutorizacaoVoto;
+import com.brunoborelli.votacao.client.StatusAutorizacaoVoto;
 import com.brunoborelli.votacao.dto.ResultadoVotacaoResposta;
 import com.brunoborelli.votacao.entity.EscolhaVoto;
 import com.brunoborelli.votacao.entity.SessaoVotacao;
 import com.brunoborelli.votacao.entity.SituacaoResultadoVotacao;
 import com.brunoborelli.votacao.entity.Voto;
 import com.brunoborelli.votacao.exception.ConflitoDeNegocioException;
-import com.brunoborelli.votacao.exception.RequisicaoInvalidaException;
+import com.brunoborelli.votacao.exception.RecursoNaoEncontradoException;
 import com.brunoborelli.votacao.repository.ContagemVotoPorEscolha;
 import com.brunoborelli.votacao.repository.VotoRepository;
-import com.brunoborelli.votacao.validation.ValidadorCpf;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,24 +22,20 @@ public class VotoService {
 
     private final VotoRepository votoRepository;
     private final SessaoVotacaoService sessaoVotacaoService;
-    private final ValidadorCpf validadorCpf;
+    private final ClientAutorizacaoVoto clientAutorizacaoVoto;
 
     public VotoService(
         VotoRepository votoRepository,
         SessaoVotacaoService sessaoVotacaoService,
-        ValidadorCpf validadorCpf
+        ClientAutorizacaoVoto clientAutorizacaoVoto
     ) {
         this.votoRepository = votoRepository;
         this.sessaoVotacaoService = sessaoVotacaoService;
-        this.validadorCpf = validadorCpf;
+        this.clientAutorizacaoVoto = clientAutorizacaoVoto;
     }
 
     @Transactional
     public Voto registrar(Long pautaId, String cpfAssociado, EscolhaVoto escolha) {
-        if (!validadorCpf.ehValido(cpfAssociado)) {
-            throw new RequisicaoInvalidaException("CPF inválido");
-        }
-
         SessaoVotacao sessaoVotacao = sessaoVotacaoService.buscarPorPautaId(pautaId);
         Instant instanteVoto = Instant.now();
 
@@ -50,6 +47,16 @@ public class VotoService {
 
         if (votoRepository.existsByPautaIdAndCpfAssociado(pautaId, cpfAssociado)) {
             throw votoJaRegistrado(pautaId, cpfAssociado);
+        }
+
+
+        StatusAutorizacaoVoto statusAutorizacao =
+                clientAutorizacaoVoto.consultar(cpfAssociado);
+
+        if (statusAutorizacao != StatusAutorizacaoVoto.ABLE_TO_VOTE) {
+            throw new RecursoNaoEncontradoException(
+                    "Associado não autorizado a votar"
+            );
         }
 
         Voto voto = new Voto(

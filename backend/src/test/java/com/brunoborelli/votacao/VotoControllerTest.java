@@ -1,23 +1,30 @@
 package com.brunoborelli.votacao;
 
+import com.brunoborelli.votacao.client.ClientAutorizacaoVoto;
+import com.brunoborelli.votacao.client.StatusAutorizacaoVoto;
 import com.brunoborelli.votacao.entity.EscolhaVoto;
 import com.brunoborelli.votacao.entity.Pauta;
 import com.brunoborelli.votacao.entity.SessaoVotacao;
 import com.brunoborelli.votacao.entity.Voto;
+import com.brunoborelli.votacao.exception.RecursoNaoEncontradoException;
 import com.brunoborelli.votacao.repository.PautaRepository;
 import com.brunoborelli.votacao.repository.SessaoVotacaoRepository;
 import com.brunoborelli.votacao.repository.VotoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +47,16 @@ class VotoControllerTest extends IntegrationTest {
 
     @Autowired
     private VotoRepository votoRepository;
+
+
+    @MockitoBean
+    private ClientAutorizacaoVoto clientAutorizacaoVoto;
+
+    @BeforeEach
+    void autorizarVotoPorPadrao() {
+        when(clientAutorizacaoVoto.consultar(anyString()))
+                .thenReturn(StatusAutorizacaoVoto.ABLE_TO_VOTE);
+    }
 
     @Test
     void deveRegistrarVotoEmSessaoAberta() throws Exception {
@@ -87,6 +104,9 @@ class VotoControllerTest extends IntegrationTest {
     void deveRecusarCpfInvalido() throws Exception {
         Pauta pauta = cadastrarPautaComSessaoAberta();
 
+        when(clientAutorizacaoVoto.consultar("52998224724"))
+                .thenThrow(new RecursoNaoEncontradoException("CPF não encontrado"));
+
         mockMvc.perform(post("/api/v1/pautas/{pautaId}/votos", pauta.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -95,8 +115,22 @@ class VotoControllerTest extends IntegrationTest {
                       "escolha": "SIM"
                     }
                     """))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.mensagem").value("CPF inválido"));
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.mensagem").value("CPF não encontrado"));
+    }
+
+    @Test
+    void deveRecusarAssociadoSemAutorizacaoParaVotar() throws Exception {
+        Pauta pauta = cadastrarPautaComSessaoAberta();
+        when(clientAutorizacaoVoto.consultar(CPF_VALIDO))
+                .thenReturn(StatusAutorizacaoVoto.UNABLE_TO_VOTE);
+
+        mockMvc.perform(post("/api/v1/pautas/{pautaId}/votos", pauta.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requisicaoDeVoto(CPF_VALIDO, "SIM")))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.mensagem")
+                        .value("Associado não autorizado a votar"));
     }
 
     @Test
